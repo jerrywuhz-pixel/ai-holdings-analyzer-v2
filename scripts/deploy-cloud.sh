@@ -269,6 +269,16 @@ setup_cron() {
         --project="$PROJECT_ID" \
         2>/dev/null || log_info "daily-market-scan 任务已存在"
 
+    # 开盘前止盈行动计划 (工作日 09:00 CST = 01:00 UTC)
+    gcloud scheduler jobs create http daily-profit-taking \
+        --schedule="0 1 * * 1-5" \
+        --uri="${gateway_url}/api/cron/profit-taking" \
+        --http-method=POST \
+        --oidc-service-account-email="$SA_EMAIL" \
+        --oidc-token-audience="$gateway_url" \
+        --project="$PROJECT_ID" \
+        2>/dev/null || log_info "daily-profit-taking 任务已存在"
+
     # 心跳检测 (每 5 分钟)
     gcloud scheduler jobs create http heartbeat-check \
         --schedule="*/5 * * * *" \

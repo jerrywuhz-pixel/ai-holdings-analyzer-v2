@@ -59,6 +59,14 @@ skills:
     description: "Hermes 量化与期权策略研究、回测、信号和风控"
     timeout_seconds: 180
 
+  profit-taking:
+    enabled: true
+    api_key: ${SKILL_PROFIT_TAKING_KEY}
+    # 工作日 09:00 自动执行开盘前止盈行动计划（cron 语法）
+    cron: "0 9 * * 1-5"
+    description: "开盘前止盈行动计划与操作建议"
+    timeout_seconds: 300
+
 channels:
   wechat_claw:
     enabled: true

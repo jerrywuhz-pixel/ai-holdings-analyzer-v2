@@ -23,12 +23,10 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from supabase import Client, create_client
-
 logger = logging.getLogger(__name__)
 
 
-def _get_supabase_client() -> Client:
+def _get_supabase_client() -> Any:
     """
     从环境变量创建同步 Supabase 客户端。
 
@@ -42,6 +40,8 @@ def _get_supabase_client() -> Client:
         raise RuntimeError(
             "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required."
         )
+    from supabase import create_client
+
     return create_client(url, key)
 
 
@@ -72,7 +72,7 @@ class DeliveryManager:
     # 最大重试次数（超过后标记 ABANDONED）
     MAX_RETRIES = 3
 
-    def __init__(self, client: Client | None = None) -> None:
+    def __init__(self, client: Any | None = None) -> None:
         """
         Args:
             client: 可选的同步 Supabase 客户端。若不传入，则从环境变量自动创建。

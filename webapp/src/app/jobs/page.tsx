@@ -83,6 +83,8 @@ function jobTypeLabel(type: string): string {
     'broker-parse': '券商解析',
     'trade-input': '交易录入',
     'weekly-report': '周报生成',
+    'profit_taking': '止盈计划',
+    'daily-profit-taking': '止盈计划',
   };
   return map[type] || type;
 }

@@ -311,6 +311,22 @@ async def get_analysis(symbol: str, request: Request, tenant_id: str = Depends(_
     return result
 
 
+@router.get("/portfolio/profit-taking")
+async def get_profit_taking_plans(request: Request, tenant_id: str = Depends(_extract_tenant_id)):
+    """读取最近的止盈行动计划。"""
+    middleware = request.app.state.gateway_middleware
+    plans = await middleware.read("profit_taking_plans", tenant_id)
+    plans = sorted(
+        plans or [],
+        key=lambda row: (row.get("plan_date", ""), row.get("created_at", "")),
+        reverse=True,
+    )
+    return {
+        "ok": True,
+        "plans": plans[:50],
+    }
+
+
 @router.get("/brain/context")
 async def get_brain_context(
     request: Request,

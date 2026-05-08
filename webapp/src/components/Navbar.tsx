@@ -6,6 +6,7 @@ import { useState } from 'react';
 const navLinks = [
   { href: '/', label: '总览' },
   { href: '/positions', label: '持仓' },
+  { href: '/profit-taking', label: '止盈' },
   { href: '/transactions', label: '交易' },
   { href: '/weekly', label: '周报' },
 ];

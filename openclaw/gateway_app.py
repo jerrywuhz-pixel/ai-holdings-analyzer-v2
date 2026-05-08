@@ -92,6 +92,7 @@ async def lifespan(app: FastAPI):
     _heartbeat_reporter.register_skill("position-aggregate")
     _heartbeat_reporter.register_skill("daily-analysis")
     _heartbeat_reporter.register_skill("quant-options-strategy")
+    _heartbeat_reporter.register_skill("profit-taking")
     _heartbeat_reporter.start(interval_seconds=300)
 
     logger.info("OpenClaw Gateway started (mode=%s)", os.getenv("DEPLOYMENT_MODE", "local"))
@@ -224,6 +225,50 @@ async def cron_sellput_score(request: Request):
         body.get("contracts", []),
         min_score=int(body.get("min_score", 70)),
     )
+
+
+@app.post("/api/cron/profit-taking")
+async def cron_profit_taking(request: Request):
+    """
+    Cron: 开盘前止盈行动计划
+
+    由 Cloud Scheduler 在工作日 09:00 CST 触发。
+    扫描所有活跃持仓，回测止盈规则，写入行动计划，并为命中规则的个股
+    创建 delivery_runs 待推送。
+    """
+    _verify_cron_request(request)
+
+    job_id = None
+    try:
+        from openclaw.gateway.job_manager import JobManager
+
+        mgr = JobManager()
+        job_id = await mgr.create_job("daily-profit-taking")
+        await mgr.start_job(job_id)
+
+        import importlib
+        profit_mod = importlib.import_module(
+            "openclaw.skills.profit-taking.service"
+        )
+        orchestrator = profit_mod.ProfitTakingOrchestrator()
+        result = await orchestrator.generate_daily_plans(job_run_id=job_id)
+
+        if result.get("ok"):
+            await mgr.complete_job(job_id, result=result)
+        else:
+            await mgr.fail_job(job_id, result.get("message") or str(result.get("errors", [])))
+
+        return result
+    except Exception as exc:
+        logger.error("Profit-taking cron failed: %s", exc)
+        if job_id:
+            try:
+                from openclaw.gateway.job_manager import JobManager
+
+                await JobManager().fail_job(job_id, str(exc))
+            except Exception:
+                logger.exception("Failed to mark profit-taking job as failed")
+        return {"ok": False, "error": str(exc)}
 
 
 @app.post("/api/cron/heartbeat")

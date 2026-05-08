@@ -50,6 +50,7 @@ SKILL_ACTION_MAP: dict[str, Optional[str]] = {
     "opportunity-hunter": "ai_analysis",
     "quant-options-strategy": "ai_analysis",
     "weekly-report": "ai_analysis",
+    "profit-taking": "ai_analysis",
     "heartbeat": None,  # heartbeat 免费，不检查配额
 }
 

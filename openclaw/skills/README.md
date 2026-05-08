@@ -14,6 +14,7 @@
 | **Position Aggregate** | `position-aggregate/` | 交易写入后自动触发 / 手动"更新持仓" | 按 symbol 聚合 trade_events，计算持仓快照 | trade_events, position_snapshots, job_runs |
 | **Daily Analysis** | `daily-analysis/` | Cron 每日 15:30 / 手动"今日复盘" | 生成 AI 驱动的日终分析报告，推送给用户 | trade_events, position_snapshots, daily_analysis, delivery_runs, users |
 | **Quant Options Strategy** | `quant-options-strategy/` | 手动"量化策略/期权策略" / Hermes 定时策略评估 | 由 Hermes 统一执行量化和期权策略研究、回测、信号、风控建议 | position_snapshots, daily_reports, job_runs |
+| **Profit Taking** | `profit-taking/` | Cron 每日 09:00 / 手动"今日止盈" | 基于大盘状态、ATR/RSI/均线和历史回测生成止盈行动计划 | position_snapshots, profit_taking_plans, delivery_runs, user_sessions |
 | **Heartbeat** | `heartbeat/` | Cron 每5分钟 | 巡检超时 job、重试失败 delivery、标记放弃记录 | job_runs, delivery_runs, task_definitions |
 
 ---
@@ -48,6 +49,11 @@
      │              │
      │              ▼
      │        daily_reports / job_runs
+     │
+     ├─→ [Profit Taking Skill] ──→ profit_taking_plans
+     │              │
+     │              ▼
+     │        delivery_runs
      │
      └─→ [手动触发：更新持仓 / 今日复盘]
 ```
